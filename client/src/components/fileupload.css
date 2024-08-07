@@ -1,0 +1,21 @@
+.container {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  .file-input {
+    margin-bottom: 20px;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  #loading {
+    margin-top: 20px;
+  }
+  
+  #selected-files {
+    margin-top: 20px;
+  }
+  

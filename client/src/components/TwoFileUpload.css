@@ -1,0 +1,68 @@
+/* TwoFileUpload.css */
+.container {
+    text-align: center;
+  }
+  
+  .file-input button,
+  .song button {
+    margin: 10px;
+  }
+  
+  .loading-stages {
+    margin-top: 20px;
+  }
+  
+  .stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+  }
+  
+  .loading-bar {
+    width: 100px;
+    height: 10px;
+    background-color: #ccc;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .loading-bar::after {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 100%;
+    background-color: #76c7c0;
+    position: absolute;
+    animation: loading 2s infinite;
+  }
+  
+  @keyframes loading {
+    0% { left: -20px; }
+    100% { left: 100%; }
+  }
+  
+  .hash-animation, .drum-animation {
+    width: 400px;
+    height: 400px;
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .hash-animation {
+    background-image: url('C:\Users\DELL\Capstone\website\client\public\hash.gif');
+  }
+  
+  .drum-animation {
+    background-image: url('C:\Users\DELL\Capstone\website\client\public\drum.gif');
+  }
+  
+  .song {
+    margin: 20px 0;
+  }
+  
+  .song p {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  
