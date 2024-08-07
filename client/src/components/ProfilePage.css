@@ -1,0 +1,39 @@
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .profile-details {
+    margin-bottom: 20px;
+  }
+  
+  .report-history {
+    margin-top: 20px;
+  }
+  
+  .report-history ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .report-history li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .report-history li p {
+    margin: 0;
+  }
+  
+  .report-history a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .report-history a:hover {
+    text-decoration: underline;
+  }
+  

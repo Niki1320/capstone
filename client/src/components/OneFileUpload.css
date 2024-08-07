@@ -1,28 +1,6 @@
 /* OneFileUpload.css */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
 .container {
-  width: 80%;
-  max-width: 800px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin: 20px;
   text-align: center;
-}
-
-h1 {
-  color: #333;
 }
 
 .file-input button,
@@ -72,52 +50,18 @@ h1 {
 }
 
 .hash-animation {
-  background-image: url('C:/Users/DELL/Capstone/website/client/public/hash.gif');
+  background-image: url('D:\capstone wrbsite\mern-file-upload\client\public\hash.gif');
 }
 
 .drum-animation {
-  background-image: url('C:/Users/DELL/Capstone/website/client/public/drum.gif');
-}
-
-.results {
-  text-align: left;
-  margin-top: 20px;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+  background-image: url('D:\capstone wrbsite\mern-file-upload\client\public\drum.gif');
 }
 
 .song {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  margin: 20px 0;
 }
 
-.song:last-child {
-  border-bottom: none;
-}
-
-.song-info {
-  flex: 1;
-  padding-right: 20px;
-}
-
-.song-title {
-  font-size: 16px;
-  color: #555;
-  margin: 0 0 5px;
-}
-
-.similarity-score {
-  font-size: 14px;
-  color: #999;
-}
-
-audio {
-  width: 200px;
+.song p {
+  display: inline-block;
+  margin-right: 10px;
 }
