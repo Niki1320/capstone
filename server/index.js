@@ -2,11 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const { spawn } = require('child_process');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+require('dotenv').config(); // To load the environment variables from the .env file
+const { MongoClient, ServerApiVersion, ObjectId, GridFSBucket } = require('mongodb');
 const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
-dotenv.config();
+const { Readable } = require('stream');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +24,8 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+const uploadMemory = multer({ storage: multer.memoryStorage() });
+
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
@@ -64,8 +65,15 @@ app.post('/signup', async (req, res) => {
 
   try {
     const db = await dbPromise;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Check if email is already registered
+    const existingUser = await db.collection('User_Credentials').findOne({ emailid: email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email is already registered' });
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
     const user = {
       emailid: email,
       password: hashedPassword
@@ -97,80 +105,112 @@ app.post('/signin', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Incorrect password' });
     }
 
-    res.json({ success: true });
+    res.json({ success: true, userId: user._id });
   } catch (error) {
     console.error('Error signing in:', error);
     res.status(500).json({ success: false, message: 'Error signing in' });
   }
 });
 
-// Fetch user details route
-app.get('/user-details', async (req, res) => {
-  const { email } = req.query;
+// Upload files route
+app.post('/upload', upload.array('files', 2), (req, res) => {
+  try {
+    res.json({ message: 'Files uploaded successfully!' });
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    res.status(400).send('Error uploading files');
+  }
+});
+
+// Save report function
+async function saveReport(userId, reportData) {
+  const db = await dbPromise;
+  const bucket = new GridFSBucket(db, { bucketName: 'reports' });
+
+  const reportStream = Readable.from(reportData);
+
+  return new Promise((resolve, reject) => {
+    reportStream.pipe(bucket.openUploadStream('report.pdf', {
+      metadata: { userId: new ObjectId(userId) }
+    }))
+    .on('error', (error) => {
+      console.error('Error uploading report:', error);
+      reject('Error uploading report');
+    })
+    .on('finish', (result) => {
+      resolve(result);
+    });
+  });
+}
+
+// Upload report route
+app.post('/upload-report', uploadMemory.single('report'), async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const result = await saveReport(userId, req.file.buffer);
+    res.json({ success: true, message: 'Report uploaded successfully!', reportId: result._id });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error uploading report' });
+  }
+});
+
+// Fetch user details
+app.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
 
   try {
     const db = await dbPromise;
-    const user = await db.collection('User_Credentials').findOne({ emailid: email });
+    const user = await db.collection('User_Credentials').findOne({ _id: new ObjectId(userId) });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const plagiarismChecks = await db.collection('Plagiarism_Checks').find({ userId: user._id }).toArray();
-
-    res.json({
-      success: true,
-      user: {
-        email: user.emailid,
-        // Add other user details here as needed
-        plagiarismChecks: plagiarismChecks
-      }
-    });
+    res.json({ email: user.emailid });
   } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({ success: false, message: 'Error fetching user details' });
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ success: false, message: 'Error fetching user data' });
   }
 });
 
-const pythonScriptPath = 'process_audio.py';
+// Fetch user report history
+app.get('/user-reports/:userId', async (req, res) => {
+  const { userId } = req.params;
 
-// Upload route
-app.post('/upload', upload.single('file'), async (req, res) => {
   try {
-    const file = req.file;
-    console.log('Received file:', file);
-    const filePath = file.path;
+    const db = await dbPromise;
+    const reports = await db.collection('reports.files').find({ 'metadata.userId': new ObjectId(userId) }).toArray();
 
-    // Log before starting the Python process
-    console.log('Starting Python process...');
-    
-    const pythonProcess = spawn('python', [pythonScriptPath, filePath]  ,{ timeout: 600000 });
+    const reportData = reports.map(report => ({
+      id: report._id,
+      date: report.uploadDate,
+      fileName: report.filename,
+      reportUrl: `/report/${report._id}`
+    }));
 
-    let pythonOutput = '';
-    pythonProcess.stdout.on('data', (data) => {
-      pythonOutput += data.toString();
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      console.error('Python error output:', data.toString());
-    });
-
-    pythonProcess.on('close', (code) => {
-      console.log(`Python process exited with code ${code}`);
-      console.log('Python Output:', pythonOutput);  // Log output from Python script
-
-      try {
-        const similarClips = JSON.parse(pythonOutput);
-        console.log('Similarity results:', similarClips);
-        res.json({ success: true, similarClips: similarClips });
-      } catch (error) {
-        console.error('Error parsing Python output:', error);
-        res.status(500).json({ success: false, message: 'Error processing audio' });
-      }
-    });
+    res.json(reportData);
   } catch (error) {
-    console.error('Error handling upload:', error);
-    res.status(500).json({ success: false, message: 'Error uploading file' });
+    console.error('Error fetching report history:', error);
+    res.status(500).json({ success: false, message: 'Error fetching report history' });
+  }
+});
+
+// Serve report files
+app.get('/report/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const db = await dbPromise;
+    const bucket = new GridFSBucket(db, { bucketName: 'reports' });
+
+    const downloadStream = bucket.openDownloadStream(new ObjectId(id));
+
+    res.set('Content-Type', 'application/pdf');
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error('Error fetching report:', error);
+    res.status(500).json({ success: false, message: 'Error fetching report' });
   }
 });
 
