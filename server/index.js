@@ -2,10 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config(); // To load the environment variables from the .env file
+const { spawn } = require('child_process');
 const { MongoClient, ServerApiVersion, ObjectId, GridFSBucket } = require('mongodb');
 const bcrypt = require('bcrypt');
+const dotenv = require('dotenv');
+dotenv.config();
 const { Readable } = require('stream');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,7 +28,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 const uploadMemory = multer({ storage: multer.memoryStorage() });
-
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
@@ -112,17 +114,35 @@ app.post('/signin', async (req, res) => {
   }
 });
 
-// Upload files route
-app.post('/upload', upload.array('files', 2), (req, res) => {
+// Fetch user details route
+app.get('/user-details', async (req, res) => {
+  const { email } = req.query;
+
   try {
-    res.json({ message: 'Files uploaded successfully!' });
+    const db = await dbPromise;
+    const user = await db.collection('User_Credentials').findOne({ emailid: email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const plagiarismChecks = await db.collection('Plagiarism_Checks').find({ userId: user._id }).toArray();
+
+    res.json({
+      success: true,
+      user: {
+        email: user.emailid,
+        // Add other user details here as needed
+        plagiarismChecks: plagiarismChecks
+      }
+    });
   } catch (error) {
-    console.error('Error uploading files:', error);
-    res.status(400).send('Error uploading files');
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ success: false, message: 'Error fetching user details' });
   }
 });
 
-// Save report function
+
 async function saveReport(userId, reportData) {
   const db = await dbPromise;
   const bucket = new GridFSBucket(db, { bucketName: 'reports' });
@@ -135,7 +155,7 @@ async function saveReport(userId, reportData) {
     }))
     .on('error', (error) => {
       console.error('Error uploading report:', error);
-      reject('Error uploading report');
+      reject(new Error('Error uploading report'));
     })
     .on('finish', (result) => {
       resolve(result);
@@ -143,7 +163,7 @@ async function saveReport(userId, reportData) {
   });
 }
 
-// Upload report route
+
 app.post('/upload-report', uploadMemory.single('report'), async (req, res) => {
   const { userId } = req.body;
 
@@ -155,9 +175,13 @@ app.post('/upload-report', uploadMemory.single('report'), async (req, res) => {
   }
 });
 
-// Fetch user details
+
 app.get('/user/:userId', async (req, res) => {
   const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required' });
+  }
 
   try {
     const db = await dbPromise;
@@ -174,9 +198,13 @@ app.get('/user/:userId', async (req, res) => {
   }
 });
 
-// Fetch user report history
+
 app.get('/user-reports/:userId', async (req, res) => {
   const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required' });
+  }
 
   try {
     const db = await dbPromise;
@@ -196,7 +224,7 @@ app.get('/user-reports/:userId', async (req, res) => {
   }
 });
 
-// Serve report files
+
 app.get('/report/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -206,6 +234,11 @@ app.get('/report/:id', async (req, res) => {
 
     const downloadStream = bucket.openDownloadStream(new ObjectId(id));
 
+    downloadStream.on('error', (error) => {
+      console.error('Error fetching report:', error);
+      res.status(500).json({ success: false, message: 'Error fetching report' });
+    });
+
     res.set('Content-Type', 'application/pdf');
     downloadStream.pipe(res);
   } catch (error) {
@@ -213,6 +246,98 @@ app.get('/report/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error fetching report' });
   }
 });
+
+
+const pythonScriptPath = 'process_audio.py';
+
+// Upload route
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    console.log('Received file:', file);
+    const filePath = file.path;
+
+    // Log before starting the Python process
+    console.log('Starting Python process...');
+    
+    const pythonProcess = spawn('python', [pythonScriptPath, filePath]  ,{ timeout: 600000 });
+
+    let pythonOutput = '';
+    pythonProcess.stdout.on('data', (data) => {
+      pythonOutput += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      console.error('Python error output:', data.toString());
+    });
+
+    pythonProcess.on('close', (code) => {
+      console.log(`Python process exited with code ${code}`);
+      console.log('Python Output:', pythonOutput);  // Log output from Python script
+
+      try {
+        const similarClips = JSON.parse(pythonOutput);
+        console.log('Similarity results:', similarClips);
+        res.json({ success: true, similarClips: similarClips });
+      } catch (error) {
+        console.error('Error parsing Python output:', error);
+        res.status(500).json({ success: false, message: 'Error processing audio' });
+      }
+    });
+  } catch (error) {
+    console.error('Error handling upload:', error);
+    res.status(500).json({ success: false, message: 'Error uploading file' });
+  }
+});
+
+app.post('/upload2', upload.fields([{ name: 'file1' }, { name: 'file2' }]), async (req, res) => {
+  try {
+    const files = req.files;
+
+    if (!files['file1'] || !files['file2']) {
+      return res.status(400).json({ success: false, message: 'Both files are required' });
+    }
+
+    const filePath1 = files['file1'][0].path;
+    const filePath2 = files['file2'][0].path;
+
+    const pythonProcess = spawn('python', [path.join(__dirname, 'siamese_model.py'), filePath1, filePath2]);
+
+    let pythonOutput = '';
+    pythonProcess.stdout.on('data', (data) => {
+      pythonOutput += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      console.error('Python error output:', data.toString());
+    });
+
+    pythonProcess.on('close', (code) => {
+      console.log(`Python process exited with code ${code}`);
+      console.log('Python Output:', pythonOutput);
+
+      // Extract JSON part from the output
+      const jsonOutput = pythonOutput.match(/\{.*\}/s);
+      if (jsonOutput) {
+        try {
+          const comparisonResult = JSON.parse(jsonOutput[0]);
+          console.log('Comparison results:', comparisonResult);
+          res.json({ success: true, similarity_scores: comparisonResult.similarity_scores });
+        } catch (error) {
+          console.error('Error parsing Python output:', error);
+          res.status(500).json({ success: false, message: 'Error processing files' });
+        }
+      } else {
+        console.error('No valid JSON output found');
+        res.status(500).json({ success: false, message: 'No valid JSON output from Python script' });
+      }
+    });
+  } catch (error) {
+    console.error('Error handling upload:', error);
+    res.status(500).json({ success: false, message: 'Error processing files' });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
