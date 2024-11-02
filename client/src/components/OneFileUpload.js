@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import jsPDF from 'jspdf';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import './OneFileUpload.css';
@@ -31,8 +32,12 @@ const OneFileUpload = () => {
       setLoading(false);
       setStage(2); // Stop Preprocessing animation
       setReportGenerated(true);
+      setSimilarSongs([
+        { name: "Song A", similarity: "85%", path: "songA.mp3" },
+        { name: "Song B", similarity: "78%", path: "songB.mp3" },
+      ]);
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading files:', error);
       setLoading(false);
       setStage(0); // Reset stage on error
     }
@@ -218,7 +223,7 @@ return (
               </audio> 
             </div>
           ))}
-          <button onClick={handleGenerateReport}>Generate Report</button>
+          <button onClick={handleGenerateReport}>View Report</button>
         </div>
       )}
     </div>

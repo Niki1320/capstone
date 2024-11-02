@@ -82,6 +82,7 @@ app.post('/signup', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    
     const user = {
       emailid: email,
       password: hashedPassword
@@ -113,6 +114,7 @@ app.post('/signin', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Incorrect password' });
     }
 
+    res.json({ success: true, userId: user._id });
     res.json({ success: true, userId: user._id });
   } catch (error) {
     console.error('Error signing in:', error);
