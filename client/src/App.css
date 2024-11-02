@@ -1,6 +1,6 @@
 .App {
   text-align: center;
-  margin-top: 20px;
+  
 }
 
 .main-page {
@@ -15,9 +15,7 @@
   border-bottom: 1px solid #ddd;
 }
 
-.header-section {
-  background-color: #f9f9f9;
-}
+
 
 .button-section {
   display: flex;

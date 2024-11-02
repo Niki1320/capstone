@@ -1,123 +1,135 @@
-/* OneFileUpload.css */
-body {
+/* Scoped the container to be specific to one file upload */
+.one-file-container {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
+  background-color: #121212;
+  color: #e0e0e0;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
+  align-items: center; 
+  min-height: 100vh;
 }
 
-.container {
+.one-file-upload-box {
   width: 80%;
   max-width: 800px;
-  background: white;
+  background: #1e1e1e;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   padding: 20px;
   margin: 20px;
   text-align: center;
 }
 
-h1 {
-  color: #333;
+.one-file-h1 {
+  color: #ffffff;
 }
 
-.file-input button,
-.song button {
-  margin: 10px;
+.one-file-button {
+  background-color: #333333;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.loading-stages {
+.one-file-button:hover {
+  background-color: #444444;
+}
+
+.one-file-loading-stages {
   margin-top: 20px;
 }
 
-.stage {
+.one-file-stage {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 10px 0;
 }
 
-.loading-bar {
+.one-file-loading-bar {
   width: 100px;
   height: 10px;
-  background-color: #ccc;
+  background-color: #333;
   position: relative;
   overflow: hidden;
 }
 
-.loading-bar::after {
+.one-file-loading-bar::after {
   content: "";
   display: block;
   width: 200px;
   height: 100%;
   background-color: #76c7c0;
   position: absolute;
-  animation: loading 2s infinite;
+  animation: one-file-loading 2s infinite;
 }
 
-@keyframes loading {
+@keyframes one-file-loading {
   0% { left: -20px; }
   100% { left: 100%; }
 }
 
-.hash-animation, .drum-animation {
+.one-file-hash-animation, .one-file-drum-animation {
   width: 400px;
   height: 400px;
   background-size: contain;
   background-repeat: no-repeat;
+  margin: 20px auto;
 }
 
-.hash-animation {
+.one-file-hash-animation {
   background-image: url('C:/Users/DELL/Capstone/website/client/public/hash.gif');
 }
 
-.drum-animation {
+.one-file-drum-animation {
   background-image: url('C:/Users/DELL/Capstone/website/client/public/drum.gif');
 }
 
-.results {
+.one-file-results {
   text-align: left;
   margin-top: 20px;
+  color: #b3b3b3;
 }
 
-h2 {
+.one-file-h2 {
   text-align: center;
   margin-bottom: 20px;
+  color: #ffffff;
 }
 
-.song {
+.one-file-song {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
   padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #333;
 }
 
-.song:last-child {
+.one-file-song:last-child {
   border-bottom: none;
 }
 
-.song-info {
+.one-file-song-info {
   flex: 1;
   padding-right: 20px;
 }
 
-.song-title {
+.one-file-song-title {
   font-size: 16px;
-  color: #555;
+  color: #cccccc;
   margin: 0 0 5px;
 }
 
-.similarity-score {
+.one-file-similarity-score {
   font-size: 14px;
-  color: #999;
+  color: #888888;
 }
 
-audio {
+.one-file-audio {
   width: 200px;
 }

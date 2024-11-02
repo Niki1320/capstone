@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TwoFileUpload.css';
 import jsPDF from 'jspdf';
@@ -8,108 +8,233 @@ const TwoFileUpload = () => {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [similarSongs, setSimilarSongs] = useState([]);
+  const [similarityScores, setSimilarityScores] = useState([]);
+  const [audioClips, setAudioClips] = useState({});
+  const [reportSaved, setReportSaved] = useState(false);
+  const [finalScore, setFinalScore] = useState(null);
+  const [fileUrls, setFileUrls] = useState([]);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  const fetchUserDetails = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(`http://localhost:5000/user/${userId}`);
+      setUsername(response.data.email);
+    } catch (error) {
+      console.error("Error fetching user details:", error.response ? error.response.data : error.message);
+    }
+  };
 
   const handleFileChange = (event) => {
     setFiles([...event.target.files]);
   };
 
   const handleUpload = async () => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-
-    setLoading(true);
-    setStage(1);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (files.length !== 2) {
+        alert("Please select exactly two files.");
+        return;
+      }
+      const formData = new FormData();
+      files.forEach((file, index) => formData.append(index === 0 ? 'file1' : 'file2', file));
+
+      setLoading(true);
+      setStage(1);
+
+      const response = await axios.post('http://localhost:5000/upload2', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
       setStage(2);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setStage(3);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setStage(4);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setStage(5);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setLoading(false);
+
+      const { result, filePaths } = response.data;
+      console.log('Received file paths from server:', filePaths);
+
+      setFileUrls([filePaths.file1, filePaths.file2]);
+      setSimilarityScores(result);
+      setFinalScore(calculateWinsorizedMean(result.map(score => score.similarity_score)));
       setReportGenerated(true);
-      setSimilarSongs([
-        { name: "Song C", similarity: "80%", path: "songA.mp3" },
-        { name: "Song D", similarity: "75%", path: "songB.mp3" },
-      ]);
+      setLoading(false);
     } catch (error) {
-      console.error('Error uploading files:', error);
+      console.error('Error uploading files:', error.response ? error.response.data : error.message);
       setLoading(false);
     }
   };
 
-  const handleGenerateReport = () => {
-    const doc = new jsPDF();
-    doc.text('Audio Signature Matching Report', 10, 10);
-    similarSongs.forEach((song, index) => {
-      doc.text(`${index + 1}. ${song.name} - ${song.similarity}`, 10, 20 + (index * 10));
+  const calculateWinsorizedMean = (scores, lowerPercentile = 10, upperPercentile = 90) => {
+    if (!scores || scores.length === 0) return 0;
+    if (scores.length === 1) return scores[0];
+
+    const sortedScores = scores.slice().sort((a, b) => a - b);
+    const n = sortedScores.length;
+    const lowerIndex = Math.floor((lowerPercentile / 100) * n);
+    const upperIndex = Math.ceil((upperPercentile / 100) * n) - 1;
+    const lowerBound = sortedScores[Math.min(lowerIndex, n - 1)];
+    const upperBound = sortedScores[Math.max(upperIndex, 0)];
+
+    const winsorizedScores = scores.map(score => {
+      if (score < lowerBound) return lowerBound;
+      if (score > upperBound) return upperBound;
+      return score;
     });
-    doc.save('report.pdf');
+
+    const sum = winsorizedScores.reduce((acc, score) => acc + score, 0);
+    const winsorizedMean = sum / winsorizedScores.length;
+    const minScore = Math.min(...scores);
+    const maxScore = Math.max(...scores);
+
+    return maxScore === minScore ? 100 : ((winsorizedMean - minScore) / (maxScore - minScore)) * 100;
   };
 
+  const handleGenerateReport = async () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    let currentY = 20;
+  
+    // Title with Styled Font
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(26);
+    doc.setTextColor(0, 51, 102); // Dark blue color
+    doc.text("SPECTRAL INSPECTOR", pageWidth / 2, currentY, { align: "center" });
+    currentY += 15;
+  
+    // Subheading with Light Color
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100); // Grey color
+    doc.text(`This report is generated by ${username} on ${new Date().toLocaleDateString()}`, pageWidth / 2, currentY, { align: "center" });
+    currentY += 10;
+  
+    // Section Divider and Report Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 144, 255); // Dodger blue
+    doc.text("Category", 20, currentY);
+    doc.text("PAIR COMPARE", pageWidth - 70, currentY);
+    currentY += 10;
+  
+    // Score Box with Light Background and Increased Height
+    doc.setFillColor(224, 247, 255); // Light blue background
+    const boxHeight = 60; // Increased height for the blue box
+    doc.roundedRect(10, currentY, pageWidth - 20, boxHeight, 5, 5, "FD"); // Filled rounded box
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("Song 1", 20, currentY + 10);
+    doc.text("Song 2", pageWidth - 70, currentY + 10);
+  
+    // Display file names with narrower wrapping
+    doc.setFontSize(12);
+    const maxWidth = pageWidth / 3 - 20; // Adjust maximum width for narrower wrapping
+    const song1Lines = doc.splitTextToSize(files[0].name || "Song name 1", maxWidth);
+    const song2Lines = doc.splitTextToSize(files[1].name || "Song name 2", maxWidth);
+    doc.text(song1Lines, 20, currentY + 20);
+    doc.text(song2Lines, pageWidth - 70, currentY + 20);
+  
+    // Move the Plagiarism Score further down and align it to the right
+    currentY += boxHeight + 20; // Adjusted spacing to prevent overlap with the plagiarism score
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0, 51, 102);
+    doc.text("PLAGIARISM SCORE", 20, currentY);
+  
+    // Plagiarism score aligned to the far right
+    doc.setFontSize(24);
+    doc.text(`${finalScore}%`, pageWidth - 20, currentY, { align: "right" });
+  
+    doc.save("pair_compare_report.pdf");
+  
+    // Prepare data for upload
+    const pdfBlob = doc.output("blob");
+    const formData = new FormData();
+    formData.append("report", pdfBlob, "pair_compare_report.pdf");
+    formData.append("userId", localStorage.getItem("userId"));
+    formData.append("reportData", JSON.stringify({
+      similarityScores,
+      audioClips,
+      reportName: "pair_compare_report.pdf",
+    }));
+  
+    try {
+      const saveResponse = await axios.post("http://localhost:5000/save-pair-report", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (saveResponse.status === 200) {
+        setReportSaved(true);
+        alert("Report saved successfully.");
+      } else {
+        throw new Error("Failed to save the report");
+      }
+    } catch (error) {
+      console.error("Error saving report:", error.response ? error.response.data : error.message);
+    }
+  };
+  
+  
+  
+
   return (
-    <div className="container">
-      <h1>Pair and Compare</h1>
-      <div className="file-input">
-        <label>
-          <input type="file" accept=".mp3" multiple onChange={handleFileChange} style={{ display: 'none' }} />
-          <button onClick={() => document.querySelector('input[type="file"]').click()}>Select Files</button>
-        </label>
-      </div>
-      {files.length > 0 && (
-        <p>Selected files: {files.map((file) => file.name).join(', ')}</p>
-      )}
-      <div>
-        <button onClick={handleUpload}>Check Plagiarism</button>
-      </div>
-      {loading && (
-        <div className="loading-stages">
-          {stage === 1 && (
-            <div className="stage">
-              <div className="loading-bar"></div>
-              <p>Preprocessing...</p>
-            </div>
-          )}
-          {stage === 2 && (
-            <div className="stage">
-              <div className="loading-bar"></div>
-              <p>Comparing...</p>
-            </div>
-          )}
-          {stage === 3 && (
-            <div className="stage">
-              <div className="hash-animation"></div>
-              <p>Our Models Analyzing...</p>
-            </div>
-          )}
-          {stage === 4 && (
-            <div className="stage">
-              <div className="drum-animation"></div>
-              <p>Almost Done...</p>
-            </div>
-          )}
+    <div className="two-file-container">
+      <div className="two-file-upload-box">
+        <h1 className="two-file-h1">Pair Compare</h1>
+        <div className="file-input">
+          <label>
+            <input type="file" accept=".mp3" multiple onChange={handleFileChange} style={{ display: 'none' }} disabled={loading}/>
+            <button className="two-file-button" onClick={() => !loading && document.querySelector('input[type="file"]').click()} disabled={loading} >Select Files</button>
+          </label>
         </div>
-      )}
-      {!loading && reportGenerated && (
+        {files.length > 0 && (
+          <div>
+            <p>Selected files:</p>
+            {files.map((file, index) => (
+              <p key={index} style={{ margin: '0' }}>{file.name}</p>
+            ))}
+          </div>
+        )}
         <div>
-          <h2>Similar Songs</h2>
-          {similarSongs.map((song, index) => (
-            <div key={index} className="song">
-              <p>{song.name} - {song.similarity}</p>
-              <audio controls>
-                <source src={song.path} type="audio/mp3" />
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-          ))}
-          <button onClick={handleGenerateReport}>View Report</button>
+          <button className="two-file-button" onClick={handleUpload}>Check Plagiarism</button>
         </div>
-      )}
+        {loading && (
+          <div className="two-file-loading-stages">
+            {stage === 1 && (
+              <div className="two-file-stage">
+                <div className="two-file-loading-bar"></div>
+                <p>Processing...</p>
+              </div>
+            )}
+            {stage === 2 && (
+              <div className="two-file-stage">
+                <div className="two-file-loading-bar"></div>
+                <p>Getting Similarity Score...</p>
+              </div>
+            )}
+          </div>
+        )}
+        {!loading && reportGenerated && (
+          <div style={{ textAlign: 'center' }}>
+            <h2 className="two-file-h2">Final Similarity Score</h2>
+            <h3>{finalScore}</h3>
+            <h4>Uploaded Files:</h4>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              {fileUrls.map((url, index) => (
+                <audio key={index} controls style={{ margin: '0 10px' }}>
+                  <source src={`http://localhost:5000/${url}`} type="audio/mp3" />
+                  Your browser does not support the audio tag.
+                </audio>
+              ))}
+            </div>
+            <button className="two-file-button" onClick={handleGenerateReport}>
+              Generate PDF Report
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

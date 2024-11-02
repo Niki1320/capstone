@@ -1,68 +1,119 @@
-/* TwoFileUpload.css */
-.container {
-    text-align: center;
-  }
-  
-  .file-input button,
-  .song button {
-    margin: 10px;
-  }
-  
-  .loading-stages {
-    margin-top: 20px;
-  }
-  
-  .stage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px 0;
-  }
-  
-  .loading-bar {
-    width: 100px;
-    height: 10px;
-    background-color: #ccc;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .loading-bar::after {
-    content: "";
-    display: block;
-    width: 20px;
-    height: 100%;
-    background-color: #76c7c0;
-    position: absolute;
-    animation: loading 2s infinite;
-  }
-  
-  @keyframes loading {
-    0% { left: -20px; }
-    100% { left: 100%; }
-  }
-  
-  .hash-animation, .drum-animation {
-    width: 400px;
-    height: 400px;
-    background-size: contain;
-    background-repeat: no-repeat;
-  }
-  
-  .hash-animation {
-    background-image: url('C:\Users\DELL\Capstone\website\client\public\hash.gif');
-  }
-  
-  .drum-animation {
-    background-image: url('C:\Users\DELL\Capstone\website\client\public\drum.gif');
-  }
-  
-  .song {
-    margin: 20px 0;
-  }
-  
-  .song p {
-    display: inline-block;
-    margin-right: 10px;
-  }
-  
+/* Scoped the container to be specific to two file uploads */
+.two-file-container {
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  min-height: 100vh;
+}
+
+.two-file-upload-box {
+  width: 80%;
+  max-width: 800px;
+  background: #1e1e1e;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  margin: 20px;
+  text-align: center;
+}
+
+.two-file-h1 {
+  color: #ffffff;
+}
+
+.two-file-button {
+  background-color: #333333;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.two-file-button:hover {
+  background-color: #444444;
+}
+
+.two-file-loading-stages {
+  margin-top: 20px;
+}
+
+.two-file-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.two-file-loading-bar {
+  width: 100px;
+  height: 10px;
+  background-color: #333;
+  position: relative;
+  overflow: hidden;
+}
+
+.two-file-loading-bar::after {
+  content: "";
+  display: block;
+  width: 200px;
+  height: 100%;
+  background-color: #76c7c0;
+  position: absolute;
+  animation: two-file-loading 2s infinite;
+}
+
+@keyframes two-file-loading {
+  0% { left: -20px; }
+  100% { left: 100%; }
+}
+
+.two-file-results {
+  text-align: left;
+  margin-top: 20px;
+  color: #b3b3b3;
+}
+
+.two-file-h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.two-file-song {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.two-file-song:last-child {
+  border-bottom: none;
+}
+
+.two-file-song-info {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.two-file-song-title {
+  font-size: 16px;
+  color: #cccccc;
+  margin: 0 0 5px;
+}
+
+.two-file-similarity-score {
+  font-size: 14px;
+  color: #888888;
+}
+
+.two-file-audio {
+  width: 200px;
+}

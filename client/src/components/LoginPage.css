@@ -1,92 +1,192 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-  }
-  
-  .container {
-    text-align: center;
-  }
-  
-  .login-options {
-    position: relative;
-  }
-  
-  .button {
-    display: block;
-    padding: 15px 25px;
-    margin: 10px auto;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
-    color: #fff;
-    background-color: #007BFF;
-    transition: all 0.3s ease;
-  }
-  
-  #signInButton {
-    animation: slideInLeft 1s forwards;
-  }
-  
-  #signUpButton {
-    animation: slideInRight 1s forwards;
-  }
-  
-  @keyframes slideInLeft {
-    to {
-      transform: translateX(0);
-    }
-    from {
-      transform: translateX(-100%);
-    }
-  }
-  
-  @keyframes slideInRight {
-    to {
-      transform: translateX(0);
-    }
-    from {
-      transform: translateX(100%);
-    }
-  }
-  
-  .form-container {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: left;
-  }
-  
-  .form label {
-    display: block;
-    margin: 10px 0 5px;
-  }
-  
-  .form input {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin-bottom: 15px;
-  }
-  
-  #submitButton {
-    display: block;
-    width: 100%;
-    padding: 10px;
-  }
-  
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: #000;
+}
+
+.login-page {
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.welcome-section {
+  height: 100vh;
+  background-image: url('https://c4.wallpaperflare.com/wallpaper/738/744/882/music-vinyl-simple-background-minimalism-wallpaper-preview.jpg');
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  text-shadow: 1px 1px 4px #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.welcome-section h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.welcome-section p {
+  font-size: 1.2rem;
+}
+
+.about-section {
+  display: flex;
+  padding: 40px 100px; /* Increased padding for a more spacious feel */
+  background-color: #c0c0c0;
+  color: black; /* Dark grey for text */
+  width: 100vw; /* Ensure full width */
+  height: 500px; /* Auto height */
+  margin: 0; /* Ensure no margin */
+  align-items: center; /* Center vertically */
+}
+
+.about-content {
+  flex: 1; /* Allow content to take available space */
+  padding-right: 20px; /* Right padding for space between text and image */
+  display: flex; /* Make this a flex container */
+  flex-direction: column; /* Stack content vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: flex-start; /* Align text to the left */
+}
+
+.about-content h2 {
+  font-size: 2.5rem; /* Increase heading size */
+  margin-bottom: 10px; /* Space between heading and paragraph */
+  align-content: center;
+  padding-left: 2%;
+}
+
+.about-content p {
+  font-size: 1.2rem; /* Paragraph font size */
+  line-height: 1.5; /* Spacing for readability */
+  color: #000;
+}
+
+.about-image {
+  width: 300px; /* Set a fixed width for the image */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.services-section {
+  padding: 40px 0; /* Top and bottom padding for the services section */
+  background-color: #282c34; /* Darker background for contrast */
+  color: #ffffff; /* White text for readability */
+  height: 600px;
+}
+
+.services-section h2 {
+  font-size: 2.5rem;
+  text-align: center;
+  color: cornsilk; /* Accent color for section heading */
+  margin-bottom: 30px;
+}
+
+.card {
+  /* background-color: #3a3f47; */
+  background-color: #D3D3D3;
+  color: black; /* White text for contrast */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+  padding: 20px;
+  text-align: center;
+}
+
+.card h4 {
+  color: green; /* Accent color for headings */
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 1rem;
+  color: black;
+}
+
+.card:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.carousel-container {
+  display: flex;
+  justify-content: center; /* Center the carousel horizontally */
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+/* Card Image Styling */
+.card-image {
+  /* width: 80%; */
+  height: 160px;
+  width: 200px;
+  margin: 15px auto 0; /* Center horizontally and add top margin */
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+.form-container {
+  background-color: #444; /* Dark background for form */
+  color: #ffffff; /* White text for form */
+  border-radius: 8px; /* Rounded corners for form */
+  padding: 20px; /* Padding around form */
+  width: 400px; /* Fixed width for the form */
+}
+
+input {
+  border-radius: 4px; /* Rounded corners for inputs */
+}
+
+.btn-signin {
+  background-color: #28a745; /* Green for Sign In */
+  border: none; /* Remove default border */
+  color: #ffffff; /* White text */
+}
+
+.btn-signin:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.btn-signup {
+  background-color: #17a2b8; /* Teal for Sign Up */
+  border: none; /* Remove default border */
+  color: #ffffff; /* White text */
+}
+
+.btn-signup:hover {
+  background-color: #138496; /* Darker teal on hover */
+}
+
+.safety-section {
+  display: flex;               /* Enable Flexbox */
+  flex-direction: column;      /* Stack elements vertically */
+  justify-content: center;     /* Center vertically */
+  align-items: center;         /* Center horizontally */
+  background-color: #222222;   /* Dark grey background */         /* White text for contrast */
+  padding: 40px 20px;          /* Padding for spacing */
+  height: 300px;
+  text-align: center;          /* Center text inside each line */
+}
+
+.safety-section p {
+  font-size: 1.4rem;           /* Bigger font size */
+  line-height: 1;            /* Spacing for readability */
+  margin: 10px 0;              /* Margin for better spacing */
+  font-weight: 400;            /* Normal weight for Roboto */
+  color: white;    
+}
+
+.services-section .react-multi-carousel-list {
+  padding: 0 15px; /* Reduce padding inside the carousel to bring cards closer */
+}
