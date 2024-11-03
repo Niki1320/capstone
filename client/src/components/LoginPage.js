@@ -113,7 +113,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
       >
         <p>Want to be safe from accidental plagiarism before releasing your music? We got your back!</p>
         <p>Found someone copying your music and want to verify? We got your back!</p>
-        <p>Go ahead and delve into our world where AI will be your Inspector</p>
+        <p>Go ahead and delve into our world where AI will be your Inspector.</p>
       </motion.section>
 
       {/* About Us Section with Animation */}
@@ -127,7 +127,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
         <div className="about-content">
           <h2>About Us</h2>
           <p>
-            Spectral Inspector uses cutting-edge ML technology to analyze music structure, rhythm, melody and much more, helping musicians to protect their intellectual property. Plagiarism reports are generated for each check and will be stored with us for you to view anytime that you want. Currently, we support only MP3 inputs, and guess what? it is completely free to use!! So Help us to enhance and embrace the creative spirit of music.
+            Spectral Inspector uses cutting-edge AI to analyze music structure, rhythm, melody and much more, helping musicians to protect their intellectual property. Plagiarism reports are generated for each check and will be stored with us for you to view anytime that you want. Currently, we support only MP3 inputs, and guess what? it is completely free to use!! So Help us to enhance and embrace the creative spirit of music.
           </p>
         </div>
         <img className="about-image" src="https://cdn-icons-png.flaticon.com/512/3844/3844724.png" alt="About Us" />
