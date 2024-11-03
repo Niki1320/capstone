@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import jsPDF from 'jspdf';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import './OneFileUpload.css';
@@ -32,12 +31,8 @@ const OneFileUpload = () => {
       setLoading(false);
       setStage(2); // Stop Preprocessing animation
       setReportGenerated(true);
-      setSimilarSongs([
-        { name: "Song A", similarity: "85%", path: "songA.mp3" },
-        { name: "Song B", similarity: "78%", path: "songB.mp3" },
-      ]);
     } catch (error) {
-      console.error('Error uploading files:', error);
+      console.error('Error uploading file:', error);
       setLoading(false);
       setStage(0); // Reset stage on error
     }
@@ -178,20 +173,9 @@ return (
       </div>
 
       {file && <p>Selected file: {file.name}</p>}
-      
-      {/* Button with loading state */}
       <div>
-        <button 
-          className="one-file-button" 
-          onClick={handleUpload} 
-          disabled={loading} // Disable button while loading
-        >
-          Check Plagiarism
-        </button>
+        <button className="one-file-button" onClick={handleUpload}>Check Plagiarism</button>
       </div>
-      
-      {/* Message prompting the user to wait while loading */}
-      {loading && <p>Please wait, your file is currently being processed...</p>}
 
       {stage === 1 && (
         <div className="stage">
@@ -205,25 +189,29 @@ return (
           <h2 className="one-file-h2">Top 10 Similar Songs</h2>
           <p>Download the report for a detailed analysis</p>
           {similarSongs.map((song, index) => (
-            <div key={index} className="one-file-song">
-              <div className="one-file-song-info">
-                <p className="one-file-song-title">
-                  {song.song_name} - {song.artist} - {song.album}
-                </p>
-                <p className="one-file-similarity-score">
-                  Similarity Score: {song.similarity_score}%
-                </p>
-              </div>
-              <audio controls className="one-file-audio">
-                <source 
-                  src={`http://localhost:5000/audio?path=${song.clip_path}`} 
-                  type="audio/mp3" 
-                />
-                Your browser does not support the audio element.
-              </audio> 
-            </div>
-          ))}
-          <button onClick={handleGenerateReport}>View Report</button>
+    <div key={index} className="one-file-song">
+        <div className="one-file-song-info">
+            <p className="one-file-song-title">
+                {song.song_name} - {song.artist} - {song.album}
+            </p>
+            <p className="one-file-similarity-score">
+                Similarity Score: {song.similarity_score}%
+            </p>
+        </div>
+         <audio controls className="one-file-audio">
+         <source 
+            // src={`http://localhost:5000/audio?path=${encodeURIComponent(song.clip_path)}`} 
+            src={`http://localhost:5000/audio?path=${song.clip_path}`} 
+            type="audio/mp3" 
+        />
+            Your browser does not support the audio element.
+         </audio> 
+    </div>
+))}
+
+
+
+          <button onClick={handleGenerateReport}>Generate Report</button>
         </div>
       )}
     </div>
