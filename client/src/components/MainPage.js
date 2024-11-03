@@ -8,7 +8,7 @@ const MainPage = () => {
         <div className="main-page">
             <header className="header-section">
                 <h1>Spectral Inspector</h1>
-                <p>Your gateway to audio analysis and comparison.</p>
+                <p>Your gateway to music inspection and comparison.</p>
                 <Link to="/profile" className="profile-icon">
                     <FaUserCircle size={40} />
                 </Link>
